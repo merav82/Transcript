@@ -1,0 +1,60 @@
+{
+  "video_path": "C:\\Users\\chkro\\OneDrive\\Documents\\yoav\\Transcript\\Task1.mp4",
+  "keyframe_count": 9,
+  "frames": [
+    {
+      "frame_index": 181,
+      "timestamp_sec": 5.973009452764769,
+      "timestamp_label": "00-00-05-973",
+      "image_path": "frames\\frame_0000181_00-00-05-973.jpg"
+    },
+    {
+      "frame_index": 889,
+      "timestamp_sec": 29.33704642822033,
+      "timestamp_label": "00-00-29-337",
+      "image_path": "frames\\frame_0000889_00-00-29-337.jpg"
+    },
+    {
+      "frame_index": 1482,
+      "timestamp_sec": 48.906077397775626,
+      "timestamp_label": "00-00-48-906",
+      "image_path": "frames\\frame_0001482_00-00-48-906.jpg"
+    },
+    {
+      "frame_index": 2411,
+      "timestamp_sec": 79.56312591500475,
+      "timestamp_label": "00-01-19-563",
+      "image_path": "frames\\frame_0002411_00-01-19-563.jpg"
+    },
+    {
+      "frame_index": 2962,
+      "timestamp_sec": 97.7461546911008,
+      "timestamp_label": "00-01-37-746",
+      "image_path": "frames\\frame_0002962_00-01-37-746.jpg"
+    },
+    {
+      "frame_index": 4267,
+      "timestamp_sec": 140.81122284501254,
+      "timestamp_label": "00-02-20-811",
+      "image_path": "frames\\frame_0004267_00-02-20-811.jpg"
+    },
+    {
+      "frame_index": 5098,
+      "timestamp_sec": 168.23426624417013,
+      "timestamp_label": "00-02-48-234",
+      "image_path": "frames\\frame_0005098_00-02-48-234.jpg"
+    },
+    {
+      "frame_index": 5923,
+      "timestamp_sec": 195.45930932997638,
+      "timestamp_label": "00-03-15-459",
+      "image_path": "frames\\frame_0005923_00-03-15-459.jpg"
+    },
+    {
+      "frame_index": 6703,
+      "timestamp_sec": 221.19935006564776,
+      "timestamp_label": "00-03-41-199",
+      "image_path": "frames\\frame_0006703_00-03-41-199.jpg"
+    }
+  ]
+}

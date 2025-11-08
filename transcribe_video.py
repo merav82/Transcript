@@ -1,5 +1,7 @@
 import argparse
 import json
+import os
+import shutil
 from datetime import timedelta
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -9,8 +11,44 @@ import numpy as np
 import whisper
 
 
+_FFMPEG_PATH: Path | None = None
+
+
+def ensure_ffmpeg_available() -> Path:
+    """Ensure an ffmpeg binary is discoverable by Whisper."""
+
+    global _FFMPEG_PATH
+    if _FFMPEG_PATH and _FFMPEG_PATH.exists():
+        return _FFMPEG_PATH
+
+    existing = shutil.which("ffmpeg")
+    if existing:
+        _FFMPEG_PATH = Path(existing)
+        return _FFMPEG_PATH
+
+    try:
+        import imageio_ffmpeg  # type: ignore
+    except Exception as exc:  # pragma: no cover - import error path
+        raise RuntimeError(
+            "ffmpeg binary not found. Install ffmpeg or add it to PATH, "
+            "or pip install imageio-ffmpeg."
+        ) from exc
+
+    ffmpeg_path = Path(imageio_ffmpeg.get_ffmpeg_exe()).resolve()
+    if ffmpeg_path.suffix.lower() == ".exe" and ffmpeg_path.name.lower() != "ffmpeg.exe":
+        canonical = ffmpeg_path.with_name("ffmpeg.exe")
+        if not canonical.exists():  # copy once to provide the expected filename
+            shutil.copy(ffmpeg_path, canonical)
+        ffmpeg_path = canonical
+
+    os.environ["PATH"] = f"{ffmpeg_path.parent}{os.pathsep}{os.environ.get('PATH', '')}"
+    _FFMPEG_PATH = ffmpeg_path
+    return _FFMPEG_PATH
+
+
 def transcribe_audio(model_name: str, video_path: Path, language: str | None) -> Dict:
     """Run Whisper transcription for the given video."""
+    ensure_ffmpeg_available()
     model = whisper.load_model(model_name)
     result = model.transcribe(str(video_path), language=language)
     return result
@@ -106,6 +144,8 @@ def write_transcript(transcript: Dict, output_path: Path, output_format: str) ->
             lines.append(text)
             lines.append("")
         output_path.write_text("\n".join(lines), encoding="utf-8")
+    elif output_format == "txt":
+        output_path.write_text(transcript.get("text", ""), encoding="utf-8")
     else:
         raise ValueError(f"Unsupported transcript output format: {output_format}")
 
@@ -139,7 +179,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--resize-width", type=int, default=None, help="Resize saved frames to this width (pixels)")
     parser.add_argument(
         "--transcript-format",
-        choices=["json", "srt"],
+        choices=["json", "srt", "txt"],
         default="json",
         help="Output format for transcript result",
     )
