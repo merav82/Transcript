@@ -8,6 +8,7 @@ from typing import Dict, List, Tuple
 
 import cv2
 import numpy as np
+import torch
 import whisper
 
 
@@ -50,7 +51,8 @@ def transcribe_audio(model_name: str, video_path: Path, language: str | None) ->
     """Run Whisper transcription for the given video."""
     ensure_ffmpeg_available()
     model = whisper.load_model(model_name)
-    result = model.transcribe(str(video_path), language=language)
+    use_fp16 = model.device.type != "cpu"
+    result = model.transcribe(str(video_path), language=language, fp16=use_fp16, verbose=False)
     return result
 
 
@@ -170,8 +172,8 @@ def format_srt_timestamp(td: timedelta) -> str:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Transcribe MP4 video and extract key frames.")
-    parser.add_argument("video", type=Path, help="Path to the MP4 video file")
-    parser.add_argument("output", type=Path, help="Directory to store transcript and frames")
+    parser.add_argument("video", type=Path, nargs="?", default=None, help="Path to the MP4 video file")
+    parser.add_argument("output", type=Path, nargs="?", default=None, help="Directory to store transcript and frames")
     parser.add_argument("--model", default="base", help="Whisper model size (tiny, base, small, medium, large)")
     parser.add_argument("--language", default=None, help="Language code to bias transcription (e.g. 'he', 'en')")
     parser.add_argument("--diff-threshold", type=float, default=12.0, help="Mean pixel diff threshold to trigger a screenshot")
@@ -192,8 +194,20 @@ def ensure_dir(path: Path) -> None:
 
 def main() -> None:
     args = parse_args()
-    video_path: Path = args.video
-    output_dir: Path = args.output
+    video_path: Path | None = args.video
+    output_dir: Path | None = args.output
+
+    if video_path is None:
+        try:
+            user_input = input("Enter the path to the video file: ").strip()
+        except EOFError as exc:
+            raise SystemExit("No video file provided.") from exc
+        if not user_input:
+            raise SystemExit("No video file provided.")
+        video_path = Path(user_input)
+
+    if output_dir is None:
+        output_dir = Path("output") / video_path.stem
 
     if not video_path.exists():
         raise FileNotFoundError(f"Video not found: {video_path}")
